@@ -7,7 +7,6 @@ function RegisterPage() {
 	const [error, setError] = useState("")
 
 
-
 	function validateNameAndSurname(fullName) {
 		setError("");
 		if (fullName == null || fullName == undefined || fullName.length < 1) {
@@ -60,6 +59,17 @@ function RegisterPage() {
 		}
 		return true;
 	  }
+
+	  function checkExistingUser(email) {
+		setError("");
+		if (result.error) {
+			setError("Email is already taken. Please use a different email.");
+			return false;
+		} else {
+			setError("Registration successful!");
+			return true
+		}
+	  }
 	
 	  function validatePassword(password) {
 		setError("");
@@ -91,6 +101,7 @@ function RegisterPage() {
 		return true;
 	  }
 
+
 	async function register() {
 
 		if(validateEmail(user.email) == false)return;
@@ -98,6 +109,13 @@ function RegisterPage() {
 		if(validateNameAndSurname(user.name) == false)return;
 
 		var result = await UserController.registerNewUser(user);
+
+		if (result.error) {
+			alert("Email is already taken. Please use a different email.");
+		} else {
+			alert("Registration successful!");
+		}
+	
 	}
 
   return (
@@ -172,12 +190,12 @@ function RegisterPage() {
 						</div>
 						<div class="card-footer py-3 border-0">
 							<div class="text-center">
-								Already have an account? <a href="index.html" class="text-dark">Login</a>
+								Already have an account? <a href="/login" class="text-dark">Login</a>
 							</div>
 						</div>
 					</div>
 					<div class="text-center mt-5 text-muted">
-					Copyright © Aleksander Racicki ╭ᑎ╮
+					Copyright © ProsperNet
 					</div>
 				</div>
 			</div>

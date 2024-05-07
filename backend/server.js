@@ -69,30 +69,13 @@ var usr = {
 app.post('/register', async (req,res)=>{
   var obj = req.body
   console.log(obj)
+  const existingUser = await database.listItems("users", { email: obj.email });
+  if (existingUser.length > 0) {
+    return res.status(400).json({ error: 'Email already in use' });
+  }
 
   var addedItem = await database.addItem("users", obj);
-  
   res.json(addedItem);
-})
-
-//loggingin
-app.post('/login', async (req,res)=>{
-  var obj = req.body
-  console.log(obj)
-  if (obj.email == null || obj.password == null || obj.email == "" || obj.password == ""){
-    res.json("fail");
-  }
-
-  var foundItems = await database.listItems("users", {email: obj.email, password: obj.password});
-  console.log(foundItems);
-  if (foundItems.length > 0) {
-    var o ={status:"success"}
-    res.status(200).json(o);
-  } else {
-
-    var o ={status:"fail"}
-    res.json(o);
-  }
 })
 
 //loggingin
