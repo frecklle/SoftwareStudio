@@ -48,30 +48,6 @@ app.get('/db', async (req,res)=>{
   res.json(items);
 })
 
-app.get('/db/addusr', async (req,res)=>{
-  function generateRandomString(length) {
-    var result = '';
-    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    var charactersLength = characters.length;
-    for ( var i = 0; i < length; i++ ) {
-      result += characters.charAt(Math.floor(Math.random() * charactersLength));
-    }
-    return result;
-  }
-  function getRandomNumberBetween1And99() {
-    return Math.floor(Math.random() * (99 - 1 + 1)) + 1;
-  }
-var usr = {
-  name: generateRandomString(10),
-  age: getRandomNumberBetween1And99()
-};
-
-  var addedItem = await database.addItem("users", usr);
-  console.log(addedItem)
-  
-  res.json(addedItem);
-})
-
 app.listen(port,() =>{
   console.log(`Server started at http://localhost:${port}`)
 });

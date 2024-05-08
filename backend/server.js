@@ -5,7 +5,6 @@
 //const db = require("./database.js");
 var cors = require('cors');
 
-// Enable CORS for all origins
 const express = require("express")
 const app = express();
 app.use(cors());
@@ -41,37 +40,16 @@ app.get('/db', async (req,res)=>{
   res.json(items);
 })
 
-app.get('/db/addusr', async (req,res)=>{
-  function generateRandomString(length) {
-    var result = '';
-    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    var charactersLength = characters.length;
-    for ( var i = 0; i < length; i++ ) {
-      result += characters.charAt(Math.floor(Math.random() * charactersLength));
-    }
-    return result;
-  }
-  function getRandomNumberBetween1And99() {
-    return Math.floor(Math.random() * (99 - 1 + 1)) + 1;
-  }
-var usr = {
-  name: generateRandomString(10),
-  age: getRandomNumberBetween1And99()
-};
-
-  var addedItem = await database.addItem("users", usr);
-  console.log(addedItem)
-  
-  res.json(addedItem);
-})
-
 //registering
 app.post('/register', async (req,res)=>{
   var obj = req.body
   console.log(obj)
+  
   const existingUser = await database.listItems("users", { email: obj.email });
   if (existingUser.length > 0) {
-    return res.status(400).json({ error: 'Email already in use' });
+    // 406 http code Not Acceptable
+    res.status(406).json({ error: 'Email already in use' });
+    return;
   }
 
   var addedItem = await database.addItem("users", obj);
@@ -97,6 +75,26 @@ app.post('/login', async (req,res)=>{
     res.json(o);
   }
 })
+
+//forgotpassword
+app.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const existingUser = await database.listItems("users", { email: email });
+
+    if (existingUser.length > 0) {
+      var o ={status:"success"}
+      res.status(200).json(o);
+    } else {
+      var o ={status:"fail"}
+      res.json(o);
+    }
+  } catch (error) {
+    console.error("Error checking email:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
 
 app.listen(port,() =>{
   console.log(`Server started at http://localhost:${port}`)

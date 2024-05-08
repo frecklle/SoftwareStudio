@@ -1,6 +1,7 @@
 "use client"
 import { UserController } from '@/contollers/UserController';
 import React,{useState} from 'react'
+import CopyrightProsperNet from '../(Copright)/page';
 
 function RegisterPage() {
 	const [user, setUser] = useState({})
@@ -60,17 +61,6 @@ function RegisterPage() {
 		return true;
 	  }
 
-	  function checkExistingUser(email) {
-		setError("");
-		if (result.error) {
-			setError("Email is already taken. Please use a different email.");
-			return false;
-		} else {
-			setError("Registration successful!");
-			return true
-		}
-	  }
-	
 	  function validatePassword(password) {
 		setError("");
 		const passwordRegex =
@@ -110,8 +100,8 @@ function RegisterPage() {
 
 		var result = await UserController.registerNewUser(user);
 
-		if (result.error) {
-			alert("Email is already taken. Please use a different email.");
+		if (result.error.length > 0) {
+			setError("Email is already taken. Please use a different email.");
 		} else {
 			alert("Registration successful!");
 		}
@@ -194,9 +184,7 @@ function RegisterPage() {
 							</div>
 						</div>
 					</div>
-					<div class="text-center mt-5 text-muted">
-					Copyright © ProsperNet
-					</div>
+					<CopyrightProsperNet/>
 				</div>
 			</div>
 		</div>

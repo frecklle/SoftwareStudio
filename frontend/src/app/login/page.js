@@ -1,6 +1,7 @@
 "use client"
 import React,{useState} from 'react'
 import { UserController } from '@/contollers/UserController';
+import CopyrightProsperNet from '@/app/(Copright)/page'
 
 function LoginPage() {
     const [user, setUser] = useState({})
@@ -52,7 +53,7 @@ function LoginPage() {
 								<div class="mb-3">
 									<div class="mb-2 w-100">
 										<label class="text-muted" for="password">Password</label>
-										<a href="forgot.html" class="float-end">
+										<a href="/forgot-password" class="float-end">
 											Forgot Password?
 										</a>
 									</div>
@@ -95,9 +96,7 @@ function LoginPage() {
 							</div>
 						</div>
 					</div>
-					<div class="text-center mt-5 text-muted">
-                    Copyright © Aleksander Racicki ╭ᑎ╮
-					</div>
+					<CopyrightProsperNet></CopyrightProsperNet>
 				</div>
 			</div>
 		</div>

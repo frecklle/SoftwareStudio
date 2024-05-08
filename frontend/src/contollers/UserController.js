@@ -1,6 +1,5 @@
 import { baseApiUrl } from "./constants";
 
-
 export class UserController {
   /**
    * Resets password procedure step 1 sends mail to user if found matching user
@@ -141,6 +140,33 @@ export class UserController {
       });
     return res;
   };
+
+//forgot-password
+  static resetPassword = async (email) => {
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+
+    const raw = JSON.stringify({ email });
+
+    const requestOptions = {
+        method: "POST",
+        headers: myHeaders,
+        body: raw,
+        redirect: "follow",
+    };
+
+    let res = await fetch(baseApiUrl + "/forgot-password", requestOptions)
+      .then((response) => response.text())
+      .then((result) => {
+        return result;
+      })
+      .catch((error) => {
+        console.error(error);
+        return "fail";
+      });
+    return JSON.parse(res);
+  };
+
 
   // /**
   //  * Delete user and its data
