@@ -141,7 +141,7 @@ export class UserController {
     return res;
   };
 
-//forgot-password
+ //forgot-password
   static resetPassword = async (email) => {
     const myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
@@ -166,6 +166,32 @@ export class UserController {
       });
     return JSON.parse(res);
   };
+
+// change password
+  static changePassword =  async (email, newPassword) => {
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+
+    const raw = JSON.stringify({ email, newPassword });
+
+    const requestOptions = {
+        method: "POST",
+        headers: myHeaders,
+        body: raw,
+        redirect: "follow",
+    };
+
+    try {
+        let res = await fetch(baseApiUrl + "/change-password", requestOptions);
+        let result = await res.json();
+        return result;
+    } catch (error) {
+        console.error("Error:", error);
+        return { success: false, message: "Failed to change password" };
+    }
+};
+
+  
 
 
   // /**
@@ -219,4 +245,6 @@ export class UserController {
 
   //   return cookieValue;
   // }
+
+  
 }

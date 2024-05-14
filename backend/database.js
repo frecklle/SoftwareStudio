@@ -14,9 +14,26 @@ class DatabaseController {
         return (await this.getDBConnection()).collection(collection).find(filter).toArray();
     }
 
+    static findOne = async (collection, filter) => {
+        return (await this.getDBConnection()).collection(collection).findOne(filter);
+    }
+
     static addItem = async (collection, object) => {
         return (await this.getDBConnection()).collection(collection).insertOne(object);
     }
+
+    static editItem = async (collection, filter, update) => {
+        return (await this.zaktualizujObjekt(collection, filter, update));
+    }
+
+    static updateItem = async (collection, filter, update) => {
+        return (await this.zaktualizujObjekt(collection, filter, update));
+    }
+
+    static zaktualizujObjekt = async (collection, filter, update) => {
+        return (await this.getDBConnection()).collection(collection).updateOne(filter, update);
+    }
+    
 
     static insertItem = async (collection, object) => {
         return (await this.addItem(collection, object));

@@ -15,16 +15,15 @@ function ResetPasswordPage() {
         try {
             const result = await UserController.resetPassword(email);
             if (result.status === "success") {
-                // Email exists, proceed with sending reset password link
-                // You can add your logic here
                 setEmailExists(true);
-                console.log("Email exists in the database.");
+                setError("Email sent, please check your inbox")
+            } else if (result.status != "fail" && result.status != "success") {
+                setEmailExists(true);
+                setError("Server error!!"+result.status)
             } else {
-                // Email does not exist in the database
-                console.log("Email does not exist in the database.");
                 setEmailExists(false);
                 setError("Email doesnt exist")
-                // You can show an error message or take appropriate action
+                
             }
         } catch (error) {
             console.error("Error resetting password:", error);

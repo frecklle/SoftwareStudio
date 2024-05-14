@@ -4,6 +4,7 @@
 
 //const db = require("./database.js");
 var cors = require('cors');
+const nodemailer = require('nodemailer');
 
 const express = require("express")
 const app = express();
@@ -11,7 +12,6 @@ app.use(cors());
 const expressLayouts = require('express-ejs-layouts')
 
 app.set("view engine", "ejs")
-app.set('views', __dirname + '/views')
 app.set('layout', 'layouts/layout')
 app.use(expressLayouts)
 app.use(express.static('public'))
@@ -26,6 +26,9 @@ const port = process.env.PORT || 8000;
 const indexRouter = require('./routes/index')
 const userRouter = require('./')
 const database = require( "./database");
+const emailService = require("./emailService");
+const DatabaseController = require('./database');
+const changePassword = require('./changePassword')
 const bcrypt = require('bcrypt')
 
 app.use(express.urlencoded({extended: false}))
@@ -84,6 +87,7 @@ app.post('/forgot-password', async (req, res) => {
     const existingUser = await database.listItems("users", { email: email });
 
     if (existingUser.length > 0) {
+      await emailService.sendResetPasswordEmail(email);
       var o ={status:"success"}
       res.status(200).json(o);
     } else {
@@ -94,6 +98,34 @@ app.post('/forgot-password', async (req, res) => {
     console.error("Error checking email:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
+  
+});
+
+//change-pass
+app.post('/change-password', async (req, res) => {
+    const {email, newPassword, repeatPassword } = req.body;
+    if (newPassword !== repeatPassword) {
+      return res.status(400).json({ error: 'Passwords do not match' });
+    }
+    try {
+      // Find user by email
+      const user = await DatabaseController.findOne({ email });
+
+      // Check if user exists
+      if (!user) {
+          return res.status(404).json({ error: 'User not found' });
+      }
+
+      await changePassword.changePass(email, newPassword)
+
+      return res.status(200).json({ message: 'Password updated successfully' });
+  } catch (error) {
+      console.error('Error updating password:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+  }
+
+
+
 });
 
 app.listen(port,() =>{
