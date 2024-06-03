@@ -1,0 +1,10 @@
+/*.homeContainer{
+    position: fixed;
+    bottom: 10vh;
+    left: 50vh;
+    width: 80vh;
+}*/
+.homeContainer{
+    display: flex;
+    width: 100%;
+}
