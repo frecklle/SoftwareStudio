@@ -1,0 +1,16 @@
+/* style.css */
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.post-creation-form {
+    background: #f8f9fa;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.text-center {
+    text-align: center;
+}

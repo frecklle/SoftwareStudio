@@ -2,6 +2,7 @@
 import { UserController } from '@/contollers/UserController';
 import React,{useState} from 'react'
 import CopyrightProsperNet from '../(Copright)/page';
+import AppLogo from "@/components/appLogo";
 
 function RegisterPage() {
 	const [user, setUser] = useState({})
@@ -100,10 +101,10 @@ function RegisterPage() {
 
 		var result = await UserController.registerNewUser(user);
 
-		if (result.error.length > 0) {
+		if (result.error != undefined) {
 			setError("Email is already taken. Please use a different email.");
 		} else {
-			alert("Registration successful!");
+			window.location.href = "/login";
 		}
 	
 	}
@@ -113,9 +114,7 @@ function RegisterPage() {
 		<div class="container h-100">
 			<div class="row justify-content-sm-center h-100">
 				<div class="col-xxl-4 col-xl-5 col-lg-5 col-md-7 col-sm-9">
-					<div class="text-center my-5">
-						<img src="https://getbootstrap.com/docs/5.0/assets/brand/bootstrap-logo.svg" alt="logo" width="100"/>
-					</div>
+					<AppLogo/>
 					<div class="card shadow-lg">
 						<div class="card-body p-5">
 							<h1 class="fs-4 card-title fw-bold mb-4">Register</h1>
