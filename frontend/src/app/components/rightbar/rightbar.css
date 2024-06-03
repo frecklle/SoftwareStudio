@@ -1,0 +1,22 @@
+/*.rightPanel{
+    width: 45vh;
+    height: 100vh;
+    background-color: #1A1A1A;
+    position: fixed;
+    
+    top: 0px;
+    right: 0px;
+    margin-top: 58px;
+}*/
+.rightPanel{
+    flex: 2;
+    margin-top: 58px;
+    height: 100vh - 58px;
+    background-color: #1A1A1A;
+}
+.header{
+    font-size: 20px;
+    font-family: 'Roboto', sans-serif;
+    background-color: transparent;
+    text-align: center;
+}

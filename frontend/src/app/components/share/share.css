@@ -1,0 +1,20 @@
+
+.sharePanel{
+    background-color: green;
+    width: 95vh;
+    height: 50vh;
+    left: 300px;
+    top: 100px;
+    position: relative;
+    border-radius: 10px;
+    
+}
+.shareTop{
+    background-color: black;
+
+}
+.shareInput{
+    background-color: transparent;
+    color: white;
+
+}

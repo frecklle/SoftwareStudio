@@ -1,0 +1,11 @@
+.feed{
+    flex: 6;
+    top: 20vh;
+    left: 50vh;
+    height: 100vh;
+    background-color: brown;
+}
+.feedWrapper{
+    padding: 20px;
+}
+

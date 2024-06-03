@@ -1,0 +1,29 @@
+.topbar{
+    height: 58px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    background-color: #1A1A1A;
+}
+
+img{
+    margin-left: 20px;
+    margin-top: 0px;
+    background-color: #1A1A1A;
+
+}
+
+.appName {
+    color: azure;
+    align-items: center;
+    margin-left: 15px;
+    margin-top: 5px;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 600;
+    font-style: normal;
+    font-size: 26px;
+    background-color: #1A1A1A;
+
+}
