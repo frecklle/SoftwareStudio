@@ -2,6 +2,7 @@
 import React,{useState} from 'react'
 import { UserController } from '@/contollers/UserController';
 import CopyrightProsperNet from '@/app/(Copright)/page'
+import AppLogo from "@/components/appLogo";
 
 function LoginPage() {
     const [user, setUser] = useState({})
@@ -14,12 +15,17 @@ function LoginPage() {
 		var result = await UserController.login(user);
         result = JSON.parse(result)
         console.log(result);
+		setTimeout(() => {
         if (result.status == "success") {
             setLoginFail(false);
+			window.location.href = "/home";
         }
         else {
             setLoginFail(true);
+			setError("Failed to login, check if you entered correct details");
+			setLoading(false);
         }
+	}, 1000);
         setLoading(false);
 	}
 
@@ -28,11 +34,9 @@ function LoginPage() {
 		<div class="container h-100">
 			<div class="row justify-content-sm-center h-100">
 				<div class="col-xxl-4 col-xl-5 col-lg-5 col-md-7 col-sm-9">
-					<div class="text-center my-5">
-						<img src="https://getbootstrap.com/docs/5.0/assets/brand/bootstrap-logo.svg" alt="logo" width="100"/>
-					</div>
+					<AppLogo />
 					<div class="card shadow-lg">
-						<div class="card-body p-5">
+						<div class="card-body p-5 rounded-full ">
 							<h1 class="fs-4 card-title fw-bold mb-4">Login</h1>
 							<form method="POST" class="needs-validation" novalidate="" autocomplete="off">
 								<div class="mb-3">
@@ -76,7 +80,7 @@ function LoginPage() {
 									</div>
 									<button disabled={loading} type="" class="btn btn-primary ms-auto" onClick={(e) => {
                                         e.preventDefault();
-                                        login();
+                                        login(); 
                                     }}>
 										{loading ? "🔁":"Login"} 
 									</button>
