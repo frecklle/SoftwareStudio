@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import AppLogo from '@/components/appLogo';
+import Link from 'next/link';
 
 function HomePage() {
 
@@ -85,7 +86,9 @@ const [commentContent, setCommentContent] = useState('');
                         <div className="col-md-4 d-flex justify-content-end align-items-center">
                             <div className="footer-text mr-3">
                                 <p className="text-muted mb-0">Welcome, </p>
-                                <AppLogo/>
+                                <Link href="/profile">
+                                    <AppLogo/>
+                                </Link>
                             </div>
                             <div>
                                 <a className="btn btn-sm btn-outline-secondary" href="/login">Sign out</a>
@@ -109,7 +112,6 @@ const [commentContent, setCommentContent] = useState('');
                                 <div className="post-header">
                                     <h2>{o.title}</h2>
                                     <p>{o.dateCreated}</p>
-                                    <p>User: Jane Smith, Age: 28, Working Status: Part-time, Hobby: Yoga</p>
                                 </div>
                                 <div className="post-content">
                                     <p>{o.content}</p>
@@ -157,7 +159,7 @@ const [commentContent, setCommentContent] = useState('');
                         <div className="p-3 mb-3 bg-light rounded">
                             <h4 className="font-weight-bold">About</h4>
                             <p className="mb-0">Prosper.Net is a vibrant online community where members can share their insights and experiences on wealth accumulation and financial well-being. It is a platform designed to inspire and empower individuals to achieve their financial goals.</p>
-                            <a href="/spending" class="float-end">
+                            <a href="/bot" class="float-end">
                                 Spending analysis 
                             </a> 
                         </div>
@@ -170,19 +172,7 @@ const [commentContent, setCommentContent] = useState('');
                             </button>
                         </div>
 
-                        
-                        <div className="p-3 mb-3 bg-light rounded">
-                            <h4 className="font-weight-bold">Links</h4>
 
-                            <ol className="list-unstyled mb-0">
-                                <li><a href="#">March 2014</a></li>
-                                <li><a href="#">February 2014</a></li>
-                                <li><a href="#">January 2014</a></li>
-                                <li><a href="#">December 2013</a></li>
-
-                                {/* Add more archive links */}
-                            </ol>
-                        </div>
 
                         
                     </div>

@@ -4,6 +4,7 @@
 import React, { useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import './style.css';
+import AppLogo from "@/components/appLogo";
 
 const categories = [
   'Transportation',
@@ -50,7 +51,7 @@ function SpendingPage() {
           <div className="row align-items-center justify-content-center">
             <div className="col-md-4 text-center">
               <a className="text-dark logo" href="#">
-                <img src="https://getbootstrap.com/docs/5.0/assets/brand/bootstrap-logo.svg" alt="logo" width="100" />
+                <AppLogo />
               </a>
             </div>
           </div>

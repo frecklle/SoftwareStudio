@@ -15,6 +15,7 @@ function LoginPage() {
 		var result = await UserController.login(user);
         result = JSON.parse(result)
         console.log(result);
+		setTimeout(() => {
         if (result.status == "success") {
             setLoginFail(false);
 			window.location.href = "/home";
@@ -22,7 +23,9 @@ function LoginPage() {
         else {
             setLoginFail(true);
 			setError("Failed to login, check if you entered correct details");
+			setLoading(false);
         }
+	}, 1000);
         setLoading(false);
 	}
 
