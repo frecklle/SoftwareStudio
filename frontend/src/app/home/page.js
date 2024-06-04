@@ -11,7 +11,7 @@ const [openedCommentId, setOpenedCommentId] = useState('');
 const [commentContent, setCommentContent] = useState('');
 
     const user = {
-        name: "John Doe"
+        name: "John"
     };
 
     // jest wywolany tylko raz w momencie wyswietlenia strony
