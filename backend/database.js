@@ -14,6 +14,10 @@ class DatabaseController {
         return (await this.getDBConnection()).collection(collection).find(filter).toArray();
     }
 
+    static wylistujObjekty = async (collection, filter) => {
+        return (await this.listItems(collection, filter));
+    }
+
     static findOne = async (collection, filter) => {
         return (await this.getDBConnection()).collection(collection).findOne(filter);
     }

@@ -1,39 +1,66 @@
 "use client";
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import AppLogo from '@/components/appLogo';
 
 function HomePage() {
 
+const [posts, setPosts] = useState([])
+const [openedCommentId, setOpenedCommentId] = useState('');
+const [commentContent, setCommentContent] = useState('');
+
     const user = {
         name: "John Doe"
     };
+
+    // jest wywolany tylko raz w momencie wyswietlenia strony
+    useEffect(() => {
+
+        // Pobranie danych z serwera async i zapisanie ich w state
+        async function fetchData() {
+        
+            let postyPobraneZBazyDanych = await fetch("http://localhost:8000/posts",
+                {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                }
+            ).then(response => response.json());
+
+            setPosts(postyPobraneZBazyDanych);
+
+        }
+  
+        fetchData();
+    }, []);
     
-    const handlePostSubmission = async () => {
+
+
+    // funkcja do dodawania komentarza
+    const handleCommentSubmission = async (id) => {
+
         try {
          // Make a POST request to your backend API endpoint
-        const response = await fetch('/create-post', {
+        const response = await fetch("http://localhost:8000/comment", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    content: 'Your post content here' // Replace 'Your post content here' with the actual content of the post
+                    userId: "663bd125f773f144a9992ff5",
+                    postId: id,
+                    content: commentContent
                 })
             });
-
-            // Check if the request was successful
-            if (response.ok) {
-                // Refresh the page or fetch the updated posts
-                // For simplicity, let's reload the page to fetch the latest posts
-                window.location.reload();
-            } else {
-                // Handle the case where the request was not successful
-                console.error('Failed to submit post');
-            }
         } catch (error) {
-            console.error('Error submitting post:', error);
-    }
+            alert("Error submitting comment: " + error);
+        }
+    };
+
+    // funkcja do otwierania komentarza
+    const handleCommentOpen = (id) => {
+        setOpenedCommentId(id);
     };
 
     const data = [
@@ -61,7 +88,7 @@ function HomePage() {
                                 <AppLogo/>
                             </div>
                             <div>
-                                <a className="btn btn-sm btn-outline-secondary" href="#">Sign out</a>
+                                <a className="btn btn-sm btn-outline-secondary" href="/login">Sign out</a>
                             </div>
                         </div>
                     </div>
@@ -75,93 +102,48 @@ function HomePage() {
                         <div className="main-content">
                             <div className="mb-5">
                                 <h2 className="font-weight-bold">Posts</h2>
-                                <div className="post">
-                            <div className="post-header">
-                                <h2>Earned $100 today!</h2>
-                                <p>Posted by John Doe on May 10, 2024</p>
-                                <p>User: John Doe, Age: 32, Working Status: Full-time, Hobby: Photography</p>
-                            </div>
-                            <div className="post-content">
-                                <p>Today I earned $100 extra by doing freelance photography work. Remember, turning your hobbies into side hustles can boost your income!</p>
-                            </div>
-                            <div className="post-actions">
-                                <button className="btn btn-sm btn-outline-primary">&#9829;</button>
-                                <button className="btn btn-sm btn-outline-secondary">Comment</button>
-                            </div>
-                        </div>
+                            
 
-                        <div className="mt-5"></div> {/* Space between posts */}
+                            {posts.map(o => {
+                                return (<div className="post">
+                                <div className="post-header">
+                                    <h2>{o.title}</h2>
+                                    <p>{o.dateCreated}</p>
+                                    <p>User: Jane Smith, Age: 28, Working Status: Part-time, Hobby: Yoga</p>
+                                </div>
+                                <div className="post-content">
+                                    <p>{o.content}</p>
+                                </div>
+                                <div className="post-actions">
+                                    <button className="btn btn-sm btn-outline-primary">&#9829;</button>
+                                    <button className="btn btn-sm btn-outline-secondary" onClick={() => handleCommentOpen(o._id)}>Comment</button>
+                                    
 
-                        <div className="post">
-                            <div className="post-header">
-                                <h2>Saved money by cooking at home!</h2>
-                                <p>Posted by Jane Smith on May 10, 2024</p>
-                                <p>User: Jane Smith, Age: 28, Working Status: Part-time, Hobby: Yoga</p>
-                            </div>
-                            <div className="post-content">
-                                <p>Instead of eating out, I decided to cook at home today. Not only did I save money, but I also enjoyed a healthy meal! Remember, cooking at home can help you save money and eat healthier.</p>
-                            </div>
-                            <div className="post-actions">
-                                <button className="btn btn-sm btn-outline-primary">&#9829;</button>
-                                <button className="btn btn-sm btn-outline-secondary">Comment</button>
-                            </div>
-                        </div>
+                                    {openedCommentId === o._id && <div>
+                                        <input id={o._id} value={commentContent} className='comment-input rounded-lg' onChange={e => setCommentContent(e.target.value)}></input>
+                                    <button className="btn btn-sm btn-secondary rounded-lg" onClick={() => handleCommentSubmission(o._id)}>✅</button>
+                                    </div>}
+                                    
+
+                                    {o.comments  && o.comments.map(c => {
+                                        return (<div className="comment">
+                                            
+                                            <p>{c.content}</p>
+                                        </div>);
+                                    })}
+                                    
+
+                                </div>
+                            </div>);
+                            })}
+
+                        
 
                         {/* Add more posts with advice */}
 
                         <div className="mt-5"></div> {/* Space between posts */}
 
-                        <div className="post">
-                            <div className="post-header">
-                                <h2>Found a great deal on clothes!</h2>
-                                <p>Posted by Emily Johnson on May 9, 2024</p>
-                                <p>User: Emily Johnson, Age: 35, Working Status: Stay-at-home parent, Hobby: Gardening</p>
-                            </div>
-                            <div className="post-content">
-                                <p>Today, I found an amazing deal on clothes at the thrift store. Remember, thrifting can help you find great items at affordable prices while also reducing waste!</p>
-                            </div>
-                            <div className="post-actions">
-                                <button className="btn btn-sm btn-outline-primary">&#9829;</button>
-                                <button className="btn btn-sm btn-outline-secondary">Comment</button>
-                            </div>
-                        </div>
-
-                        <div className="mt-5"></div> {/* Space between posts */}
-
-                        <div className="post">
-                            <div className="post-header">
-                                <h2>Got a promotion at work!</h2>
-                                <p>Posted by Michael Williams on May 8, 2024</p>
-                                <p>User: Michael Williams, Age: 40, Working Status: Full-time, Hobby: Playing guitar</p>
-                            </div>
-                            <div className="post-content">
-                                <p>I am thrilled to announce that I got promoted to manager at my company. Remember, hard work and dedication pay off. Keep pushing towards your goals!</p>
-                            </div>
-                            <div className="post-actions">
-                                <button className="btn btn-sm btn-outline-primary">&#9829;</button>
-                                <button className="btn btn-sm btn-outline-secondary">Comment</button>
-                            </div>
-                        </div>
-
-                        <div className="mt-5"></div> {/* Space between posts */}
-
-                        <div className="post">
-                            <div className="post-header">
-                                <h2>Invested in stocks!</h2>
-                                <p>Posted by Sarah Lee on May 7, 2024</p>
-                                <p>User: Sarah Lee, Age: 29, Working Status: Freelancer, Hobby: Reading</p>
-                            </div>
-                            <div className="post-content">
-                                <p>Today, I decided to invest some of my savings in stocks. Remember, investing is key to building long-term wealth. Start investing early and stay consistent!</p>
-                            </div>
-                            <div className="post-actions">
-                                <button className="btn btn-sm btn-outline-primary">&#9829;</button>
-                                <button className="btn btn-sm btn-outline-secondary">Comment</button>
-                            </div>
-                        </div>
-
-                    
-
+                        
                         </div>
 
                         {/* Repeat the post structure for more posts */}

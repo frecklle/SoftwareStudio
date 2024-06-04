@@ -32,8 +32,6 @@ const bcrypt = require('bcrypt')
 app.use(express.urlencoded({extended: false}))
 app.use(express.json());
 
-
-
 app.get('/db', async (req,res)=>{
   var items = await database.listItems("users", {});
   console.log(items)
@@ -121,10 +119,83 @@ app.post('/change-password', async (req, res) => {
       console.error('Error updating password:', error);
       return res.status(500).json({ error: 'Internal server error' });
   }
-
-
-
 });
+
+
+//post Funkcja dodaje nowy wpis do bazy danych.
+app.post('/post', async (input, output) => {
+  
+    var obj = input.body // json przesłany w requescie w frontendzie
+    // console.log(obj) 
+    
+    // sprawdzasz czy pola sa puste
+    if (obj.title == undefined || obj.content == undefined || obj.draft == undefined || obj.archived == undefined){
+      output.json("fail");
+      return;
+    }
+
+    // ustawiasz data utworzenia
+    obj['createdDate'] = new Date();
+    // dodajesz wpis do bazy danych zapisujac go do tablicy posts
+    var addedItem = await database.addItem("posts", obj);
+    // zwracasz nowy obiekt z bazy danych w formatie json do frontendu
+    output.json(addedItem);
+});
+
+//list funkcja zwraca wszystkie wpisy z bazy danych w formacie json posortowane wg pola createdDate czyli data utworzenia
+ app.get('/posts', async (req,res)=>{
+   var items = await database.wylistujObjekty("posts", {});
+   // console.log(items)
+    //  sort items by property createdDate
+   items = items.sort((a,b) => {
+    if (a.createdDate > b.createdDate) {
+      return -1; 
+    } else if (a.createdDate < b.createdDate) {
+      return 1; 
+    } else {
+      return 0; 
+    }
+   });
+   console.log(items);
+
+
+   res.json(items);
+});
+
+
+// app.put('/post', async (input, output) => {
+//   var obj = input.body // json przesłany w requescie w frontendzie
+//   console.log(obj) 
+//   var updatedItem = await database.updateItem(DbConstants.PostsTable, obj);
+//   output.json(updatedItem);
+// });
+
+// dodaj komentarz do posta jako attrybut "comments" w obiekcie post
+app.post('/comment', async (input, output) => {
+  var obj = input.body // json przesłany w requescie w frontendzie
+  console.log(obj);
+  if (obj.postId == undefined || obj.content == undefined || obj.userId == undefined){
+    output.json("fail");
+    return;
+  }
+  // dodaj komentarz do posta jako attrybut "comments" w obiekcie post
+  //pobierz post po attrybucie _id
+  var post = await database.findOne("posts", {_id: new mongoose.Types.ObjectId(obj.postId)});
+
+  if (post["comments"] == undefined)
+    post["comments"] = [];    
+  
+  delete obj["postId"];
+  obj['createdDate'] = new Date();
+  post["comments"] = [obj, ...post["comments"]];
+
+  console.log(post);
+  //zaktualizuj post w bazie danych
+  var updatedItem = await database.updateItem("posts",{_id: new mongoose.Types.ObjectId(obj.postId)}, { $set: { comments: post["comments"] } });
+  output.json(updatedItem);
+});
+
+
 
 app.listen(port,() =>{
   console.log(`Server started at http://localhost:${port}`)

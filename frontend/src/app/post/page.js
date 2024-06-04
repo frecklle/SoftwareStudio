@@ -21,17 +21,22 @@ function CreatePost() {
         setLoading(true);
         setMessage('');
 
-        const formData = new FormData();
-        formData.append('image', image);
-        formData.append('title', title);
-        formData.append('content', text);
-        formData.append('draft', draft);
-        formData.append('archived', archived);
+        const formData = {
+            "image": image,
+            "title": title,
+            "content": text,
+            "draft": draft,
+            "archived":archived
+        }
 
+        alert(JSON.stringify(formData));
         try {
-            const response = await fetch('/create-post', {
+            const response = await fetch('http://localhost:8000/post', {
                 method: 'POST',
-                body: formData
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
             });
 
             const data = await response.json();
@@ -67,10 +72,10 @@ function CreatePost() {
                             required
                         />
                     </div>
-                    <div className="mb-3">
+                    {/* <div className="mb-3">
                         <label className="form-label">Select an Image</label>
                         <input className="form-control" type="file" onChange={handleImageChange} required />
-                    </div>
+                    </div> */}
                     <div className="mb-3">
                         <label className="form-label">Post Text (optional, max 500 words)</label>
                         <textarea
