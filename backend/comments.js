@@ -1,5 +1,4 @@
 const DatabaseController = require('./database');
-const Comment = ./database.model('Comment', commentSchema);
 
 // API Endpoints
 app.post('/comments', (req, res) => {
