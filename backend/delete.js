@@ -5,15 +5,9 @@ app.delete('/my-posts/:id', (req, res) => {
     .catch(err => res.status(500).send(err));
 });
 
-const mongoose = require('mongoose');
+const DatabaseController = require('./database');
 
-const userSchema = new mongoose.Schema({
-  username: { type: String, required: true },
-  password: { type: String, required: true }, // hashed password
-  role: { type: String, default: 'user' } // 'user' or 'admin'
-});
-
-const User = mongoose.model('User', userSchema);
+const User = ./database.model('User', userSchema);
 const checkAdminRole = (req, res, next) => {
   if (!req.user) {
     return res.status(401).send('Authentication required'); // User not logged in
