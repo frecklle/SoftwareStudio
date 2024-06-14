@@ -1,4 +1,4 @@
-
+const DatabaseController = require('./database');
 postSchema.add({ likes: { type: Number, default: 0 } });
 
 app.post('/posts/:id/like', (req, res) => {
