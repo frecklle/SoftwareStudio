@@ -1,13 +1,13 @@
-const mongoose = require('mongoose');
+const DatabaseController = require('./database');
 
 const commentSchema = new mongoose.Schema({
-  postId: { type: mongoose.Schema.Types.ObjectId, ref: 'Post' },
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  postId: { type: ./database.Schema.Types.ObjectId, ref: 'Post' },
+  userId: { type: ./database.Schema.Types.ObjectId, ref: 'User' },
   text: { type: String, required: true, maxlength: 500 },
   createdAt: { type: Date, default: Date.now },
 });
 
-const Comment = mongoose.model('Comment', commentSchema);
+const Comment = /.database.model('Comment', commentSchema);
 
 // API Endpoints
 app.post('/comments', (req, res) => {
