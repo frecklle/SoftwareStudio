@@ -6,8 +6,6 @@ app.delete('/my-posts/:id', (req, res) => {
 });
 
 const DatabaseController = require('./database');
-
-const User = ./database.model('User', userSchema);
 const checkAdminRole = (req, res, next) => {
   if (!req.user) {
     return res.status(401).send('Authentication required'); // User not logged in
