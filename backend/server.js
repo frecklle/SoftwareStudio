@@ -256,11 +256,9 @@ const upload = multer({ storage: storage });
 app.use(express.static('public'));
 
 
-const authenticateUser = (req, res, next) => {
-  // ...
-};
+
 // Get user profile
-app.get('/profile', authenticateUser, async (req, res) => {
+app.get('/profile', async (req, res) => {
   try {
     const user = await DatabaseController.findOne("users", { email: req.user.email });
     if (!user) {
@@ -278,7 +276,7 @@ app.get('/profile', authenticateUser, async (req, res) => {
 });
 
 // Update user profile
-app.put('/profile', authenticateUser, upload.single('profilePicture'), async (req, res) => {
+app.put('/profile', upload.single('profilePicture'), async (req, res) => {
   try {
     const { name, bio } = req.body;
     const updateData = { name, bio };
@@ -305,7 +303,7 @@ app.put('/profile', authenticateUser, upload.single('profilePicture'), async (re
 });
 
 // Create a new post with image
-app.post("/post", authenticateUser, upload.single('image'), async (req, res) => {
+app.post("/post", upload.single('image'), async (req, res) => {
   const { title, content, isDraft } = req.body;
   const userEmail = req.user.email;
 
@@ -328,7 +326,7 @@ app.post("/post", authenticateUser, upload.single('image'), async (req, res) => 
 });
 
 // Like a post
-app.post("/post/:id/like", authenticateUser, async (req, res) => {
+app.post("/post/:id/like",  async (req, res) => {
   const { id } = req.params;
   const userEmail = req.user.email;
 
