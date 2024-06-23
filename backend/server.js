@@ -21,8 +21,6 @@ db.on("error", (error) => console.error(error));
 db.once("open", () => console.log("connected mongoose"));
 
 const port = process.env.PORT || 8000;
-const indexRouter = require("./routes/index");
-const userRouter = require("./");
 const database = require("./database");
 const emailService = require("./emailService");
 const DatabaseController = require("./database");
@@ -30,6 +28,8 @@ const changePassword = require("./changePassword");
 const bcrypt = require("bcrypt");
 const multer = require('multer');
 const path = require('path');
+const { checkToken } = require("./tokenlogic");
+const likesRouter = require("./like");
 
 
 app.use(express.urlencoded({ extended: false }));
@@ -45,7 +45,6 @@ app.get("/db", async (req, res) => {
 //registering
 app.post("/register", async (req, res) => {
   var obj = req.body;
-  console.log(obj);
 
   const existingUser = await database.listItems("users", { email: obj.email });
   if (existingUser.length > 0) {
@@ -54,6 +53,8 @@ app.post("/register", async (req, res) => {
     return;
   }
 
+  obj.password = await bcrypt.hash(obj.password, 10);
+
   var addedItem = await database.addItem("users", obj);
   res.json(addedItem);
 });
@@ -61,7 +62,7 @@ app.post("/register", async (req, res) => {
 //loggingin
 app.post("/login", async (req, res) => {
   var obj = req.body;
-  console.log(obj);
+
   if (
     obj.email == null ||
     obj.password == null ||
@@ -73,40 +74,31 @@ app.post("/login", async (req, res) => {
 
   var foundItems = await database.listItems("users", {
     email: obj.email,
-    password: obj.password,
   });
-  console.log(foundItems);
-  if (foundItems.length > 0) {
-    let token = btoa(foundItems[0].email);
 
-    var o = { status: "success", token: token };
-    res.status(200).json(o);
+
+  if (foundItems.length > 0) {
+    let token = btoa(
+      foundItems[0].email + ":~}" + new Date(Date.now() + 60 * 60 * 1000)
+    );
+
+    console.log(foundItems[0].email)
+
+    let fullName = foundItems[0].name;
+    let firstName = fullName.split(" ")[0];
+
+    if (
+      false === (await bcrypt.compare(obj.password, foundItems[0].password))
+    ) {
+      return res.json({ status: "fail" });
+    }
+    var o = { status: "success", token: token, firstName: firstName };
+    return res.status(200).json(o);
   } else {
     var o = { status: "fail" };
     res.json(o);
   }
 });
-
-// Tylko mam do czynienia z moim niezmienniczonym ciałem,
-// Dłonie, które tak dobrze potrafią dotknąć
-// Cienkich piersi, a także uroczą twarz,
-// Z którą tak dobrze się przyjaźniłem.
-// Czuję, jak mój penis zaczyna się rozprężać,
-// Więząc się od zamiłowania i oczekiwania.
-// Czuję, jak mój brzuch się napięa,
-// Roztaczając się, jak kobieta,
-// Odpowiadając na każde gest, każde dotknięcie.
-// Oczy są tak pełne żądza,
-// Dłonie tak delikatne, jak tkawica.
-// Włosy tak długie, jak halo,
-// Oczy tak jasne, jak gwiazdy.
-// Serce tak nieustraszone, jak ptaszek,
-// Ciało tak delikatne, jak lód.
-// Czuję, jak mój penis zaczyna się rozprężać,
-// Tyleż samo, jak mój zamiłowany wymiar.
-// Czuję, jak mój brzuch się napięa,
-// Tyleż samo, jak mój wymiar.
-// Tyleż samo, jak mój wymiar.
 
 //forgotpassword
 app.post("/forgot-password", async (req, res) => {
@@ -156,7 +148,10 @@ app.post("/change-password", async (req, res) => {
 //post Funkcja dodaje nowy wpis do bazy danych.
 app.post("/post", async (input, output) => {
   var obj = input.body; // json przesłany w requescie w frontendzie
-  // console.log(obj)
+  console.log(obj);
+
+  var postAuthorEmail = checkToken(input.headers.token);
+  obj.Author = postAuthorEmail;
 
   // sprawdzasz czy pola sa puste
   if (
@@ -165,24 +160,21 @@ app.post("/post", async (input, output) => {
     obj.draft == undefined ||
     obj.archived == undefined
   ) {
-    output.json("fail");
-    return;
+    return output.json("fail");
   }
-
-  //ustaw userId na poscie z tokena
-  console.log(input.headers);
-  obj["userEmail"] = atob(input.headers["Authorization"]);
 
   // ustawiasz data utworzenia
   obj["createdDate"] = new Date();
   // dodajesz wpis do bazy danych zapisujac go do tablicy posts
   var addedItem = await database.addItem("posts", obj);
-  // zwracasz nowy obiekt z bazy danych w formatie json do frontendu
-  output.json(addedItem);
+
+  return output.json(addedItem);
 });
 
 //list funkcja zwraca wszystkie wpisy z bazy danych w formacie json posortowane wg pola createdDate czyli data utworzenia
 app.get("/posts", async (req, res) => {
+  let contextUser = checkToken(req.headers.token, res);
+
   var items = await database.wylistujObjekty("posts", {});
   // console.log(items)
   //  sort items by property createdDate
@@ -195,7 +187,50 @@ app.get("/posts", async (req, res) => {
       return 0;
     }
   });
-  console.log(items);
+
+  let userPromises = [];
+
+  for (let post of items) {
+    let promise = database
+      .findOne("users", { email: post.Author })
+      .then((user) => {
+        if (user) {
+          post.authorFullName = user.name;
+        } else {
+          console.log(`User not found for email: ${post.Author}`);
+        }
+      })
+      .catch((error) => {
+        // Handle any errors during user fetching (optional)
+        console.error(`Error fetching user for post ${post._id}: ${error}`);
+      });
+
+    userPromises.push(promise);
+  }
+
+  // Wait for all user info promises to resolve
+  await Promise.all(userPromises);
+
+  /////////////
+  items = items.map((item) => {
+    return {
+      ...item,
+      isLiked:
+        item.likedBy != undefined &&
+        item.likedBy.length > 0 &&
+        item.likedBy.indexOf(contextUser) !== -1
+          ? true
+          : false,
+    };
+  });
+  /////////////
+
+  // console.log(items);
+
+  // Filter items based on contextUser condition
+  items = items.filter((value) => contextUser.includes("@"));
+
+  // Send the response after processing
   res.json(items);
 });
 
@@ -240,122 +275,122 @@ app.post("/comment", async (input, output) => {
   output.json(updatedItem);
 });
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'public/uploads/')
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname))
-  }
-});
+// // Configure multer for file uploads
+// const storage = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     cb(null, 'public/uploads/')
+//   },
+//   filename: function (req, file, cb) {
+//     cb(null, Date.now() + path.extname(file.originalname))
+//   }
+// });
 
-const upload = multer({ storage: storage });
+// const upload = multer({ storage: storage });
 
-// Serve static files from the public directory
-app.use(express.static('public'));
+// // Serve static files from the public directory
+// app.use(express.static('public'));
 
+// // Get user profile
+// app.get('/profile', async (req, res) => {
+//   try {
+//     const user = await DatabaseController.findOne("users", { email: req.user.email });
+//     if (!user) {
+//       return res.status(404).json({ error: "User not found" });
+//     }
+//     res.json({
+//       email: user.email,
+//       name: user.name,
+//       bio: user.bio,
+//       profilePicture: user.profilePicture
+//     });
+//   } catch (error) {
+//     res.status(500).json({ error: "Failed to fetch profile" });
+//   }
+// });
 
-
-// Get user profile
-app.get('/profile', async (req, res) => {
-  try {
-    const user = await DatabaseController.findOne("users", { email: req.user.email });
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
-    res.json({
-      email: user.email,
-      name: user.name,
-      bio: user.bio,
-      profilePicture: user.profilePicture
-    });
-  } catch (error) {
-    res.status(500).json({ error: "Failed to fetch profile" });
-  }
-});
-
-// Update user profile
-app.put('/profile', upload.single('profilePicture'), async (req, res) => {
-  try {
-    const { name, bio } = req.body;
-    const updateData = { name, bio };
+// // Update user profile
+// app.put('/profile', upload.single('profilePicture'), async (req, res) => {
+//   try {
+//     const { name, bio } = req.body;
+//     const updateData = { name, bio };
     
-    if (req.file) {
-      updateData.profilePicture = `/uploads/${req.file.filename}`;
-    }
+//     if (req.file) {
+//       updateData.profilePicture = `/uploads/${req.file.filename}`;
+//     }
 
-    const updatedUser = await DatabaseController.updateItem(
-      "users",
-      { email: req.user.email },
-      { $set: updateData }
-    );
+//     const updatedUser = await DatabaseController.updateItem(
+//       "users",
+//       { email: req.user.email },
+//       { $set: updateData }
+//     );
 
-    res.json({
-      email: updatedUser.email,
-      name: updatedUser.name,
-      bio: updatedUser.bio,
-      profilePicture: updatedUser.profilePicture
-    });
-  } catch (error) {
-    res.status(500).json({ error: "Failed to update profile" });
-  }
-});
+//     res.json({
+//       email: updatedUser.email,
+//       name: updatedUser.name,
+//       bio: updatedUser.bio,
+//       profilePicture: updatedUser.profilePicture
+//     });
+//   } catch (error) {
+//     res.status(500).json({ error: "Failed to update profile" });
+//   }
+// });
 
-// Create a new post with image
-app.post("/post", upload.single('image'), async (req, res) => {
-  const { title, content, isDraft } = req.body;
-  const userEmail = req.user.email;
+// // Create a new post with image
+// app.post("/post", upload.single('image'), async (req, res) => {
+//   const { title, content, isDraft } = req.body;
+//   const userEmail = req.user.email;
 
-  const newPost = {
-    title,
-    content,
-    userEmail,
-    isDraft: isDraft === 'true',
-    isArchived: false,
-    createdDate: new Date(),
-    image: req.file ? `/uploads/${req.file.filename}` : null
-  };
+//   const newPost = {
+//     title,
+//     content,
+//     userEmail,
+//     isDraft: isDraft === 'true',
+//     isArchived: false,
+//     createdDate: new Date(),
+//     image: req.file ? `/uploads/${req.file.filename}` : null
+//   };
 
-  try {
-    const addedItem = await DatabaseController.addItem("posts", newPost);
-    res.json(addedItem);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to create post" });
-  }
-});
+//   try {
+//     const addedItem = await DatabaseController.addItem("posts", newPost);
+//     res.json(addedItem);
+//   } catch (error) {
+//     res.status(500).json({ error: "Failed to create post" });
+//   }
+// });
 
-// Like a post
-app.post("/post/:id/like",  async (req, res) => {
-  const { id } = req.params;
-  const userEmail = req.user.email;
+// // Like a post
+// app.post("/post/:id/like",  async (req, res) => {
+//   const { id } = req.params;
+//   const userEmail = req.user.email;
 
-  try {
-    const post = await DatabaseController.findOne("posts", { _id: new mongoose.Types.ObjectId(id) });
-    if (!post) {
-      return res.status(404).json({ error: "Post not found" });
-    }
+//   try {
+//     const post = await DatabaseController.findOne("posts", { _id: new mongoose.Types.ObjectId(id) });
+//     if (!post) {
+//       return res.status(404).json({ error: "Post not found" });
+//     }
 
-    post.likes = post.likes || [];
-    const userLikeIndex = post.likes.indexOf(userEmail);
+//     post.likes = post.likes || [];
+//     const userLikeIndex = post.likes.indexOf(userEmail);
 
-    if (userLikeIndex === -1) {
-      post.likes.push(userEmail);
-    } else {
-      post.likes.splice(userLikeIndex, 1);
-    }
+//     if (userLikeIndex === -1) {
+//       post.likes.push(userEmail);
+//     } else {
+//       post.likes.splice(userLikeIndex, 1);
+//     }
 
-    const updatedPost = await DatabaseController.updateItem(
-      "posts",
-      { _id: new mongoose.Types.ObjectId(id) },
-      { $set: { likes: post.likes } }
-    );
+//     const updatedPost = await DatabaseController.updateItem(
+//       "posts",
+//       { _id: new mongoose.Types.ObjectId(id) },
+//       { $set: { likes: post.likes } }
+//     );
 
-    res.json(updatedPost);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to update like" });
-  }
-});
+//     res.json(updatedPost);
+//   } catch (error) {
+//     res.status(500).json({ error: "Failed to update like" });
+//   }
+// });
+
+app.use("/post", likesRouter);
 
 app.listen(port, () => {
   console.log(`Server started at http://localhost:${port}`);

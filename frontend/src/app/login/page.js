@@ -12,13 +12,13 @@ function LoginPage() {
   async function login() {
     setLoading(true);
     var result = await UserController.login(user);
-    result = JSON.parse(result);
     console.log(result);
     setTimeout(() => {
       if (result.status == "success") {
         setLoginFail(false);
         // { status: "success", token: token }
         localStorage.setItem("token", result.token);
+        localStorage.setItem("firstName", result.firstName);
 
         window.location.href = "/home";
       } else {

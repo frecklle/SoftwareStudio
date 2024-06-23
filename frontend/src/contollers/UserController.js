@@ -81,6 +81,7 @@ export class UserController {
     return usrObj;
   };
 
+
   /**
    * Returns user if contains valid authenticated cookie
    *
@@ -129,9 +130,10 @@ export class UserController {
     };
 
     let res = await fetch(baseApiUrl + "/login", requestOptions)
-      .then((response) => response.text())
+      .then((response) => response.json())
       .then((result) => {
         // this.setCookie("Bearer-token", result);
+        localStorage.setItem("token", result.token);
         return result;
       })
       .catch((error) => {
@@ -191,8 +193,11 @@ export class UserController {
     }
 };
 
-  
-
+//logout user + delete token
+  static logout =  () => {
+    localStorage.removeItem("token");
+    return true;
+  };
 
   // /**
   //  * Delete user and its data

@@ -20,3 +20,7 @@ app.delete('/comments/:id', (req, res) => {
   Comment.findByIdAndDelete(req.params.id)
     .then(result => res.send({ message: 'Comment deleted' }))
     .catch(err => res.status(500).send(err));
+<<<<<<< HEAD
+=======
+});
+>>>>>>> c79244c (token authentication to block not logged in users seeing things + like/unlike functionality.)

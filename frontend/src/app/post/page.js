@@ -1,7 +1,8 @@
 // page.js
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./style.css";
+import { PostsController } from "@/contollers/postsController";
 
 function CreatePost() {
   const [title, setTitle] = useState("");
@@ -11,6 +12,7 @@ function CreatePost() {
   const [archived, setArchived] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [likes, setLikes] = useState(0);
 
   const handleImageChange = (e) => {
     setImage(e.target.files[0]);
@@ -27,35 +29,12 @@ function CreatePost() {
       content: text,
       draft: draft,
       archived: archived,
+      likes: likes,
     };
 
-    alert(JSON.stringify(formData));
-    try {
-      const response = await fetch("http://localhost:8000/post", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: localStorage.getItem("token"),
-        },
-        body: JSON.stringify(formData),
-      });
+    await PostsController.addPost(formData);
+    window.location.href = "/home";
 
-      const data = await response.json();
-
-      if (response.ok) {
-        setMessage("Post created successfully!");
-        setTimeout(() => {
-          window.location.href = "/home";
-        }, 2000);
-      } else {
-        setMessage("Failed to create post");
-      }
-    } catch (error) {
-      console.error("Error creating post:", error);
-      setMessage("Internal Server Error");
-    } finally {
-      setLoading(false);
-    }
   };
 
   return (
@@ -73,10 +52,11 @@ function CreatePost() {
               required
             />
           </div>
-          {/* <div className="mb-3">
-                        <label className="form-label">Select an Image</label>
-                        <input className="form-control" type="file" onChange={handleImageChange} required />
-                    </div> */}
+          <div className="img-input">
+            <img src="post.png" alt="Post Image" className="post-image" />
+            <input type="file" value={image} accept="Image/jpeg, Image/png, Image/jpg" onChange = {(e) => setImage(e.target.value)}/> 
+          </div> 
+
           <div className="mb-3">
             <label className="form-label">
               Post Text (optional, max 500 words)

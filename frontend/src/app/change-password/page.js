@@ -10,39 +10,8 @@ function ChangePasswordPage() {
 	const [error, setError] = useState("")
 	const [emailExists, setEmailExists] = useState(false);
 
-	function validatePassword(password) {
-		setError("");
-		const passwordRegex =
-		  /^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[-!?#$%^&*@+=])(?!.*\s).{8,}$/;
-	
-		if (!password) {
-			setError("Password field cannot be empty.");
-		  return false;
-		}
-	
-		if (password.length < 8) {
-			setError("Password must be at least 8 characters long.");
-		  return false;
-		}
-	
-		if (!passwordRegex.test(password)) {
-			setError(
-			"Password must contain at least one digit, one letter, and one special character from the set: !?#$%^&*@-+=."
-		  );
-		  return false;
-		}
-	
-		if (password.includes(" ")) {
-			setError("Password cannot contain spaces.");
-		  return false;
-		}
-	
-		return true;
-	  }
-
 	async function changePass(){ 
 		setLoading(true);
-		if(validatePassword(user.password) == false)return;
 		setError("");
 		try {
             var result = await UserController.changePassword(user.email,user.newPassword);

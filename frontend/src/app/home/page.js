@@ -11,32 +11,66 @@ import {
 } from "recharts";
 import AppLogo from "@/components/appLogo";
 import Link from "next/link";
+import { PostsController } from "@/contollers/postsController";
+import { UserController } from "@/contollers/UserController";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faThumbsUp } from "@fortawesome/free-solid-svg-icons";
 
 function HomePage() {
   const [posts, setPosts] = useState([]);
   const [openedCommentId, setOpenedCommentId] = useState("");
   const [commentContent, setCommentContent] = useState("");
+  const [firstName, setFirstName] = useState("");
 
-  const user = {
-    name: "John Doe",
-  };
+  /////////////
+  async function fetchData() {
+    let postyPobraneZBazyDanych = await PostsController.getList();
 
+    setPosts(postyPobraneZBazyDanych);
+  } /////////////
   // jest wywolany tylko raz w momencie wyswietlenia strony
   useEffect(() => {
     // Pobranie danych z serwera async i zapisanie ich w state
-    async function fetchData() {
-      let postyPobraneZBazyDanych = await fetch("http://localhost:8000/posts", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }).then((response) => response.json());
-
-      setPosts(postyPobraneZBazyDanych);
-    }
 
     fetchData();
+
+    const storedFirstName = localStorage.getItem("firstName");
+    if (storedFirstName) {
+      setFirstName(storedFirstName);
+    } else {
+      console.error("First name not found in localStorage");
+    }
   }, []);
+  
+
+  const handleLikeToggle = async (postId) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `http://localhost:8000/post/${postId}/like`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            token: token,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      /////////////
+      const data = await response.json();
+
+      // Update posts state with updated likes count
+      await fetchData();
+      /////////////
+    } catch (error) {
+      console.error("Error toggling like:", error);
+      // Handle error, show message to user, etc.
+    }
+  };
 
   // funkcja do dodawania komentarza
   const handleCommentSubmission = async (id) => {
@@ -63,14 +97,6 @@ function HomePage() {
     setOpenedCommentId(id);
   };
 
-  const data = [
-    { name: "Jan", spending: 400 },
-    { name: "Feb", spending: 300 },
-    { name: "Mar", spending: 500 },
-    { name: "Apr", spending: 700 },
-    { name: "May", spending: 600 },
-  ];
-
   return (
     <div className="container">
       <header className="py-3 header">
@@ -86,7 +112,7 @@ function HomePage() {
             </div>
             <div className="col-md-4 d-flex justify-content-end align-items-center">
               <div className="footer-text mr-3">
-                <p className="text-muted mb-0">Welcome, </p>
+                <p className="text-muted mb-0">Welcome, {firstName} </p>
                 <Link href="/profile">
                   <AppLogo />
                 </Link>
@@ -95,7 +121,7 @@ function HomePage() {
                 <a
                   className="btn btn-sm btn-outline-secondary"
                   onClick={() => {
-                    localStorage.removeItem("token");
+                    UserController.logout();
                   }}
                   href="/login"
                 >
@@ -112,27 +138,43 @@ function HomePage() {
           <div className="col-md-8">
             <div className="main-content">
               <div className="mb-5">
-                <h2 className="font-weight-bold">Posts</h2>
+                <h2 className="font-weight-bold text-center">Posts</h2>
                 {posts.map((o) => {
                   return (
-                    <div className="post">
+                    <div key={o._id} className="post card my-3 p-5">
                       <div className="post-header">
                         <h2>{o.title}</h2>
-                        <p>{o.dateCreated}</p>
+                        <p>{o.authorFullName}</p>
                       </div>
                       <div className="post-content">
                         <p>{o.content}</p>
                       </div>
-                      <div className="post-actions">
-                        <button className="btn btn-sm btn-outline-primary">
-                          &#9829;
-                        </button>
-                        <button
-                          className="btn btn-sm btn-outline-secondary"
-                          onClick={() => handleCommentOpen(o._id)}
-                        >
-                          Comment
-                        </button>
+                      {/* ............................*/}
+                      <div className="post-actions nav  justify-content-start align-items-center ">
+                        <div className="nav-item ">
+                          <button
+                            className={`btn btn-sm btn-outline-primary  ${
+                              o.isLiked ? "active" : ""
+                            }`}
+                            onClick={() => handleLikeToggle(o._id, o.isLiked)}
+                          >
+                            <FontAwesomeIcon icon={faThumbsUp} Like />
+                          </button>
+                        </div>
+                        <div className="nav-item mx-2">
+                          <span>
+                            <b>{o.likes}</b>
+                          </span>
+                        </div>
+                        <div className="nav-item">
+                          <button
+                            className="btn btn-sm btn-outline-secondary"
+                            onClick={() => handleCommentOpen(o._id)}
+                          >
+                            Comment
+                          </button>
+                        </div>
+                        {/* ............................*/}
 
                         {openedCommentId === o._id && (
                           <div>

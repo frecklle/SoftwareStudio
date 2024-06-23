@@ -91,8 +91,7 @@ function RegisterPage() {
 	
 		return true;
 	  }
-
-
+	  
 	async function register() {
 
 		if(validateEmail(user.email) == false)return;
@@ -100,6 +99,7 @@ function RegisterPage() {
 		if(validateNameAndSurname(user.name) == false)return;
 
 		var result = await UserController.registerNewUser(user);
+
 
 		if (result.error != undefined) {
 			setError("Email is already taken. Please use a different email.");
