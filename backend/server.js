@@ -255,6 +255,10 @@ const upload = multer({ storage: storage });
 // Serve static files from the public directory
 app.use(express.static('public'));
 
+
+const authenticateUser = (req, res, next) => {
+  // ...
+};
 // Get user profile
 app.get('/profile', authenticateUser, async (req, res) => {
   try {
