@@ -7,6 +7,7 @@ import AppLogo from "@/components/appLogo";
 function RegisterPage() {
 	const [user, setUser] = useState({})
 	const [error, setError] = useState("")
+	const [isRegistered, setIsRegistered] = useState(false);
 
 
 	function validateNameAndSurname(fullName) {
@@ -90,6 +91,7 @@ function RegisterPage() {
 		}
 	
 		return true;
+		
 	  }
 	  
 	async function register() {
@@ -104,7 +106,8 @@ function RegisterPage() {
 		if (result.error != undefined) {
 			setError("Email is already taken. Please use a different email.");
 		} else {
-			window.location.href = "/login";
+			setIsRegistered(true);
+			setTimeout(() => window.location.href = "/login", 1000);
 		}
 	
 	}
@@ -174,7 +177,9 @@ function RegisterPage() {
 								{error.length>0 ? (<div class="alert alert-danger mt-3" role="alert">
                                      {error}
                                     </div>
-									):""}
+									): isRegistered?(<div class="alert alert-success mt-3" role="alert">
+										Successfully registered, redirecting to login...</div>
+									):("")}
 							</form>
 						</div>
 						<div class="card-footer py-3 border-0">

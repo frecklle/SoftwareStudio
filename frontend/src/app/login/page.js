@@ -8,6 +8,7 @@ function LoginPage() {
   const [user, setUser] = useState({});
   const [loading, setLoading] = useState(false);
   const [loginFail, setLoginFail] = useState(false);
+  const [loginAttempt, setLoginAttempt] = useState(false);
 
   async function login() {
     setLoading(true);
@@ -19,15 +20,15 @@ function LoginPage() {
         // { status: "success", token: token }
         localStorage.setItem("token", result.token);
         localStorage.setItem("firstName", result.firstName);
-
-        window.location.href = "/home";
+        setLoginAttempt(true);
+        setTimeout(() => {
+          window.location.href = "/home";
+        }, 200); // Adjust the delay as needed (in milliseconds)
       } else {
         setLoginFail(true);
         setError("Failed to login, check if you entered correct details");
-        setLoading(false);
       }
     }, 500);
-    setLoading(false);
   }
 
   return (
@@ -119,13 +120,20 @@ function LoginPage() {
                     </button>
                   </div>
 
-                  {loginFail ? (
+                  {loginFail &&!loginAttempt? (
                     <div class="alert alert-danger mt-3" role="alert">
                       Login failed
                     </div>
                   ) : (
                     ""
                   )}
+
+                  {loginAttempt && !loginFail ? (
+                    <div class="alert alert-success mt-3" role="alert">
+                      Login successful
+                    </div>
+                  ) : null}
+                  
                 </form>
               </div>
               <div class="card-footer mt-3 border-0">

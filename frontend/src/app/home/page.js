@@ -108,7 +108,8 @@ function HomePage() {
               </a>
             </div>
             <div className="col-md-4 text-center">
-              <h2 className="text-dark title">Work Earn Learn</h2>
+              <h2 className="text-dark title style={{ fontFamily: 'Lucida Console, Monaco, monospace '">
+                Work Earn Learn</h2>
             </div>
             <div className="col-md-4 d-flex justify-content-end align-items-center">
               <div className="footer-text mr-3">
