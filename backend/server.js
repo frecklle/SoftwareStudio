@@ -195,7 +195,30 @@ app.post('/comment', async (input, output) => {
   output.json(updatedItem);
 });
 
+// Upload spending data 
+app.post('/spendingData', async (req, res) => {
 
+    var obj = input.body; 
+    if (
+      obj.amount == undefined ||
+      obj.category == undefined ||
+      obj.date == undefined
+    ) {
+      output.json("fail");
+      return;
+    }
+  
+    console.log(input.headers);
+    obj["userEmail"] = atob(input.headers["Authorization"]);
+    
+    var addedItem = await database.addItem("spendingData", obj);
+    output.json(addedItem);
+});
+app.get("/spendingData", async (req, res) => {
+  var items = await database.wylistujObjekty("spendingData", {});
+  console.log(items);
+  res.json(items);
+});
 
 app.listen(port,() =>{
   console.log(`Server started at http://localhost:${port}`)
