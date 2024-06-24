@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import React, { useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import './style.css';
@@ -30,40 +31,31 @@ function SpendingData() {
     e.preventDefault();
     setLoading(true);
     setMessage('');
+
     const formData = {
-        "amount": Number,
-        "category": Text,
-        "date": Date
+        "amount": parseFloat(amount),
+        "category": category,
+        "date": date
     }
-    alert(JSON.stringify(formData));
-    try {
+
+    console.log('Posting data:', formData);
+    const token = localStorage.getItem("token");
+
       const response = await fetch('http://localhost:8000/spendingData', {
         method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: localStorage.getItem("token"),
+                    token:token
                 },
                 body: JSON.stringify(formData),
             });
+
         if (response.ok){
           setMessage('Data is uploaded successfully!');
-          setTimeout(() => {
-            window.location.href = '/bot';
-          }, 2000);
         } else {
           setMessage('Failed to upload data');
         }
-    } catch (error){
-      console.error('Error uploading data:', error);
-      setMessage('Internal Server Error');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  
-    
-  
+    };
 
   return (
     <div className="container mt-5">
@@ -72,7 +64,9 @@ function SpendingData() {
           <div className="row align-items-center justify-content-center">
             <div className="col-md-4 text-center">
               <a className="text-dark logo" href="#">
-                <AppLogo />
+                <Link href="/home">
+                  <AppLogo />
+                </Link>
               </a>
             </div>
           </div>

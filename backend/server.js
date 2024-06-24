@@ -275,7 +275,6 @@ app.post("/comment", async (input, output) => {
   output.json(updatedItem);
 });
 
-<<<<<<< HEAD
 // // Configure multer for file uploads
 // const storage = multer.diskStorage({
 //   destination: function (req, file, cb) {
@@ -287,32 +286,29 @@ app.post("/comment", async (input, output) => {
 // });
 
 // const upload = multer({ storage: storage });
-=======
+
 // Upload spending data 
 app.post('/spendingData', async (req, res) => {
 
-    var obj = input.body; 
+    var obj = req.body; 
     if (
       obj.amount == undefined ||
       obj.category == undefined ||
       obj.date == undefined
     ) {
-      output.json("fail");
+      res.json("fail");
       return;
     }
-  
-    console.log(input.headers);
-    obj["userEmail"] = atob(input.headers["Authorization"]);
     
     var addedItem = await database.addItem("spendingData", obj);
-    output.json(addedItem);
+    res.json(addedItem);
 });
+
 app.get("/spendingData", async (req, res) => {
   var items = await database.wylistujObjekty("spendingData", {});
   console.log(items);
   res.json(items);
 });
->>>>>>> origin/uploadSpendingData
 
 // // Serve static files from the public directory
 // app.use(express.static('public'));
