@@ -46,7 +46,7 @@ function SpendingData() {
 
     console.log("Posting data:", formData);
     const token = localStorage.getItem("token");
-
+    try {
     const response = await fetch("http://localhost:8000/spendingData", {
       method: "POST",
       headers: {
@@ -61,6 +61,12 @@ function SpendingData() {
     } else {
       setMessage("Failed to upload data");
     }
+  }catch (error){
+    console.error('Error uplaoding data:', error);
+    setMessage('Internal Server Error');
+  }finally{
+    setLoading(false);
+  }
   };
 
   return (
@@ -69,11 +75,9 @@ function SpendingData() {
         <div className="container-fluid">
           <div className="row align-items-center justify-content-center">
             <div className="col-md-4 text-center">
-              <a className="text-dark logo" href="#">
                 <Link href="/home">
                   <AppLogo />
                 </Link>
-              </a>
             </div>
           </div>
         </div>
@@ -127,10 +131,15 @@ function SpendingData() {
                 required
               />
             </div>
-            <button type="submit" className="btn btn-primary w-100">
-              Upload Spending Data
+            <button
+              className="btn btn-primary"
+              type="submit"
+              disabled={loading}
+            >
+              {loading ? "Uploading..." : "Upload Spending Data"}
             </button>
           </form>
+          {message && <div className="mt-3 alert alert-info">{message}</div>}
         </div>
       </div>
     </div>
