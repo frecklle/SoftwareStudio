@@ -1,61 +1,67 @@
 "use client";
 
 import Link from "next/link";
-import React, { useState } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
-import './style.css';
+import React, { useState } from "react";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+} from "recharts";
+import "./style.css";
 import AppLogo from "@/components/appLogo";
 
 const categories = [
-  'Transportation',
-  'Food',
-  'Utilities',
-  'Clothing',
-  'Medical/Healthcare',
-  'Personal',
-  'Gifts/Donations',
-  'Entertainment',
-  'Housing'
+  "Transportation",
+  "Food",
+  "Utilities",
+  "Clothing",
+  "Medical/Healthcare",
+  "Personal",
+  "Gifts/Donations",
+  "Entertainment",
+  "Housing",
 ];
 
-
 function SpendingData() {
-  const [amount, setAmount] = useState('');
-  const [category, setCategory] = useState('');
-  const [date, setDate] = useState('');
+  const [amount, setAmount] = useState("");
+  const [category, setCategory] = useState("");
+  const [date, setDate] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setMessage('');
+    setMessage("");
 
     const formData = {
-        "amount": parseFloat(amount),
-        "category": category,
-        "date": date
-    }
+      amount: parseFloat(amount),
+      category: category,
+      date: date,
+    };
 
-    console.log('Posting data:', formData);
+    console.log("Posting data:", formData);
     const token = localStorage.getItem("token");
 
-      const response = await fetch('http://localhost:8000/spendingData', {
-        method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    token:token
-                },
-                body: JSON.stringify(formData),
-            });
+    const response = await fetch("http://localhost:8000/spendingData", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        token: token,
+      },
+      body: JSON.stringify(formData),
+    });
 
-        if (response.ok){
-          setMessage('Data is uploaded successfully!');
-        } else {
-          setMessage('Failed to upload data');
-        }
-    };
+    if (response.ok) {
+      setMessage("Data is uploaded successfully!");
+    } else {
+      setMessage("Failed to upload data");
+    }
+  };
 
   return (
     <div className="container mt-5">
@@ -72,12 +78,14 @@ function SpendingData() {
           </div>
         </div>
       </header>
-      <div className="card mx-auto" style={{ maxWidth: '600px' }}>
+      <div className="card mx-auto" style={{ maxWidth: "600px" }}>
         <div className="card-body">
           <h2 className="card-title text-center">Upload Spending Data</h2>
           <form onSubmit={handleSubmit}>
             <div className="mb-3">
-              <label htmlFor="amount" className="form-label">Amount Spent (USD)</label>
+              <label htmlFor="amount" className="form-label">
+                Amount Spent (USD)
+              </label>
               <input
                 type="number"
                 className="form-control"
@@ -88,7 +96,9 @@ function SpendingData() {
               />
             </div>
             <div className="mb-3">
-              <label htmlFor="category" className="form-label">Category of Spending</label>
+              <label htmlFor="category" className="form-label">
+                Category of Spending
+              </label>
               <select
                 className="form-control"
                 id="category"
@@ -98,12 +108,16 @@ function SpendingData() {
               >
                 <option value="">Select a category</option>
                 {categories.map((cat) => (
-                  <option key={cat} value={cat}>{cat}</option>
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
                 ))}
               </select>
             </div>
             <div className="mb-3">
-              <label htmlFor="date" className="form-label">Date of Spending</label>
+              <label htmlFor="date" className="form-label">
+                Date of Spending
+              </label>
               <input
                 type="date"
                 className="form-control"
@@ -113,7 +127,9 @@ function SpendingData() {
                 required
               />
             </div>
-            <button type="submit" className="btn btn-primary w-100">Upload Spending Data</button>
+            <button type="submit" className="btn btn-primary w-100">
+              Upload Spending Data
+            </button>
           </form>
         </div>
       </div>

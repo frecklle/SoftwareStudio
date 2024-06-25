@@ -26,11 +26,12 @@ const emailService = require("./emailService");
 const DatabaseController = require("./database");
 const changePassword = require("./changePassword");
 const bcrypt = require("bcrypt");
-const multer = require('multer');
-const path = require('path');
+const multer = require("multer");
+const { ObjectId } = require("mongodb");
+const path = require("path");
 const { checkToken } = require("./tokenlogic");
 const likesRouter = require("./like");
-
+const commentsRouter = require("./comment");
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
@@ -76,13 +77,12 @@ app.post("/login", async (req, res) => {
     email: obj.email,
   });
 
-
   if (foundItems.length > 0) {
     let token = btoa(
       foundItems[0].email + ":~}" + new Date(Date.now() + 60 * 60 * 1000)
     );
 
-    console.log(foundItems[0].email)
+    console.log(foundItems[0].email);
 
     let fullName = foundItems[0].name;
     let firstName = fullName.split(" ")[0];
@@ -213,6 +213,7 @@ app.get("/posts", async (req, res) => {
 
   /////////////
   items = items.map((item) => {
+    // let a =  await database.findOne("users", { email: item.Author }),
     return {
       ...item,
       isLiked:
@@ -221,6 +222,7 @@ app.get("/posts", async (req, res) => {
         item.likedBy.indexOf(contextUser) !== -1
           ? true
           : false,
+      isAuthor: item.Author === contextUser,
     };
   });
   /////////////
@@ -256,7 +258,7 @@ app.post("/comment", async (input, output) => {
   // dodaj komentarz do posta jako attrybut "comments" w obiekcie post
   //pobierz post po attrybucie _id
   var post = await database.findOne("posts", {
-    _id: new mongoose.Types.ObjectId(obj.postId),
+    _id: new ObjectId(obj.postId),
   });
 
   if (post["comments"] == undefined) post["comments"] = [];
@@ -269,7 +271,7 @@ app.post("/comment", async (input, output) => {
   //zaktualizuj post w bazie danych
   var updatedItem = await database.updateItem(
     "posts",
-    { _id: new mongoose.Types.ObjectId(obj.postId) },
+    { _id: new ObjectId(obj.postId) },
     { $set: { comments: post["comments"] } }
   );
   output.json(updatedItem);
@@ -287,27 +289,43 @@ app.post("/comment", async (input, output) => {
 
 // const upload = multer({ storage: storage });
 
-// Upload spending data 
-app.post('/spendingData', async (req, res) => {
+// Upload spending data
+app.post("/spendingData", async (req, res) => {
+  var obj = req.body;
+  if (
+    obj.amount == undefined ||
+    obj.category == undefined ||
+    obj.date == undefined
+  ) {
+    res.json("fail");
+    return;
+  }
 
-    var obj = req.body; 
-    if (
-      obj.amount == undefined ||
-      obj.category == undefined ||
-      obj.date == undefined
-    ) {
-      res.json("fail");
-      return;
-    }
-    
-    var addedItem = await database.addItem("spendingData", obj);
-    res.json(addedItem);
+  var addedItem = await database.addItem("spendingData", obj);
+  res.json(addedItem);
 });
 
 app.get("/spendingData", async (req, res) => {
   var items = await database.wylistujObjekty("spendingData", {});
   console.log(items);
   res.json(items);
+});
+
+app.post("/deletePost", async (req, res) => {
+  var obj = req.body;
+  let contextUser = checkToken(req.headers.token, res);
+  console.log(contextUser);
+  if (contextUser == undefined || contextUser.includes("@") == false) {
+    return res.json({ success: false });
+  }
+
+  // if (contextUser !== obj.userId) {
+  //   res.json({ error: "Unauthorized" });
+  //   return;
+  // }
+
+  await database.usunJedenObiejkt("posts", { _id: new ObjectId(obj.postId) });
+  res.json({ status: "success" });
 });
 
 // // Serve static files from the public directory
@@ -336,8 +354,8 @@ app.get("/spendingData", async (req, res) => {
 //   try {
 //     const { name, bio } = req.body;
 //     const updateData = { name, bio };
-    
-//     if (req.file) {
+
+//  if (req.file) {
 //       updateData.profilePicture = `/uploads/${req.file.filename}`;
 //     }
 
@@ -414,6 +432,7 @@ app.get("/spendingData", async (req, res) => {
 // });
 
 app.use("/post", likesRouter);
+app.use("/post", commentsRouter);
 
 app.listen(port, () => {
   console.log(`Server started at http://localhost:${port}`);

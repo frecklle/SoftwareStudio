@@ -14,7 +14,7 @@ import Link from "next/link";
 import { PostsController } from "@/contollers/postsController";
 import { UserController } from "@/contollers/UserController";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faThumbsUp } from "@fortawesome/free-solid-svg-icons";
+import { faThumbsUp, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 
 function HomePage() {
   const [posts, setPosts] = useState([]);
@@ -23,7 +23,7 @@ function HomePage() {
   const [firstName, setFirstName] = useState("");
 
   /////////////
-  async function fetchData() {
+  async function odswierzKomponent() {
     let postyPobraneZBazyDanych = await PostsController.getList();
 
     setPosts(postyPobraneZBazyDanych);
@@ -32,7 +32,7 @@ function HomePage() {
   useEffect(() => {
     // Pobranie danych z serwera async i zapisanie ich w state
 
-    fetchData();
+    odswierzKomponent();
 
     const storedFirstName = localStorage.getItem("firstName");
     if (storedFirstName) {
@@ -41,7 +41,18 @@ function HomePage() {
       console.error("First name not found in localStorage");
     }
   }, []);
-  
+
+  const handleKoszowanie = async (id) => {
+    var response = await PostsController.deletePost(id);
+
+    if (response == "success") {
+      alert("Pomyslnie usunieto post");
+    }
+    if (response == "Unauthorized") {
+      alert("Cos poszlo nie tak");
+    }
+    await odswierzKomponent();
+  };
 
   const handleLikeToggle = async (postId) => {
     try {
@@ -64,7 +75,7 @@ function HomePage() {
       const data = await response.json();
 
       // Update posts state with updated likes count
-      await fetchData();
+      await odswierzKomponent();
       /////////////
     } catch (error) {
       console.error("Error toggling like:", error);
@@ -74,22 +85,10 @@ function HomePage() {
 
   // funkcja do dodawania komentarza
   const handleCommentSubmission = async (id) => {
-    try {
-      // Make a POST request to your backend API endpoint
-      const response = await fetch("http://localhost:8000/comment", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: "663bd125f773f144a9992ff5",
-          postId: id,
-          content: commentContent,
-        }),
-      });
-    } catch (error) {
-      alert("Error submitting comment: " + error);
-    }
+    const response = await PostsController.addComment(commentContent, id);
+    setCommentContent("");
+    setOpenedCommentId(null);
+    await odswierzKomponent();
   };
 
   // funkcja do otwierania komentarza
@@ -109,7 +108,8 @@ function HomePage() {
             </div>
             <div className="col-md-4 text-center">
               <h2 className="text-dark title style={{ fontFamily: 'Lucida Console, Monaco, monospace '">
-                Work Earn Learn</h2>
+                Work Earn Learn
+              </h2>
             </div>
             <div className="col-md-4 d-flex justify-content-end align-items-center">
               <div className="footer-text mr-3">
@@ -150,6 +150,26 @@ function HomePage() {
                       <div className="post-content">
                         <p>{o.content}</p>
                       </div>
+
+                      {typeof o.comments == typeof [] &&
+                        o._id == openedCommentId && (
+                          <div className="card p-2 my-2">
+                            {o.comments.map((c) => {
+                              return (
+                                <div>
+                                  <b
+                                    style={{ textAlign: "right" }}
+                                    className="text-muted mx-2"
+                                  >
+                                    {o.authorFullName}
+                                  </b>
+                                  {c.content}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+
                       {/* ............................*/}
                       <div className="post-actions nav  justify-content-start align-items-center ">
                         <div className="nav-item ">
@@ -169,12 +189,23 @@ function HomePage() {
                         </div>
                         <div className="nav-item">
                           <button
-                            className="btn btn-sm btn-outline-secondary"
+                            className="btn btn-sm btn-outline-secondary "
                             onClick={() => handleCommentOpen(o._id)}
                           >
                             Comment
                           </button>
                         </div>
+                        {o.isAuthor && (
+                          <div className="nav-item">
+                            <button
+                              className="btn btn-sm btn-outline-secondary mx-2 "
+                              onClick={() => handleKoszowanie(o._id)}
+                            >
+                              <FontAwesomeIcon icon={faTrashCan} />
+                            </button>
+                          </div>
+                        )}
+
                         {/* ............................*/}
 
                         {openedCommentId === o._id && (
@@ -195,15 +226,6 @@ function HomePage() {
                             </button>
                           </div>
                         )}
-
-                        {o.comments &&
-                          o.comments.map((c) => {
-                            return (
-                              <div className="comment">
-                                <p>{c.content}</p>
-                              </div>
-                            );
-                          })}
                       </div>
                     </div>
                   );
@@ -215,7 +237,6 @@ function HomePage() {
               {/* Repeat the post structure for more posts */}
             </div>
           </div>
-
           <div className="col-md-4">
             <div className="p-3 mb-3 bg-light rounded">
               <h4 className="font-weight-bold">About</h4>

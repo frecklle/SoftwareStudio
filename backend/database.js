@@ -33,6 +33,12 @@ class DatabaseController {
       .insertOne(object);
   };
 
+  static usunJedenObiejkt = async (collection, object) => {
+    return (await this.getDBConnection())
+      .collection(collection)
+      .deleteOne(object);
+  };
+
   static editItem = async (collection, filter, update) => {
     return await this.zaktualizujObjekt(collection, filter, update);
   };
